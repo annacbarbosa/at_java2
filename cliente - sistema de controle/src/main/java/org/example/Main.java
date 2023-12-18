@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.ProtocolException;
 import java.net.URL;
 import javax.swing.*;
 import  java.awt.*;
@@ -21,7 +22,7 @@ public class Main
 {
     public static void main(String[] args)
     {
-        String path = "http://localhost:8080/";
+        String path = "http://localhost:8080/cartao";
 
         JFrame frame = new JFrame("Acesso Cliente");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -31,22 +32,22 @@ public class Main
         JPanel panel = new JPanel();
         panel.setLayout(new GridLayout(3, 2));
 
-        JTextField inputField1 = new JTextField();
-        JTextField outputField = new JTextField();
-        outputField.setFont((new Font("Arial", Font.PLAIN, 30)));
+        JTextField Id = new JTextField();
+        JTextField acesso = new JTextField();
+        acesso.setFont((new Font("Arial", Font.PLAIN, 30)));
 
-        inputField1.setFont((new Font("Arial", Font.PLAIN, 30)));
+        Id.setFont((new Font("Arial", Font.PLAIN, 30)));
 
-        JLabel label1 = new JLabel("Código de acesso:");
+        JLabel label1 = new JLabel("Id:");
         label1.setFont((new Font("Arial", Font.BOLD, 30)));
         JLabel label3 = new JLabel("Acesso:");
         label3.setFont((new Font("Arial", Font.BOLD, 30)));
 
 
         panel.add(label1);
-        panel.add(inputField1);
+        panel.add(Id);
         panel.add(label3);
-        panel.add(outputField);
+        panel.add(acesso);
 
         String [] buttonLabels = {
                 "Enviar","Sair"
@@ -60,14 +61,14 @@ public class Main
             button.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    String Id;
+                    double id;
 
                     try{
-                        Id = inputField1.getText();
+                        id = Double.parseDouble(Id.getText());
 
                         if(label.equals("Enviar"))
                         {
-                            String content="{ \"Id\": \" " + Id + "\", \"" +  " \" }";
+                            String content="{ \"id\": \" " + id + "\", \"" +  " \" }";
 
                             System.out.println(content);
 
@@ -91,16 +92,20 @@ public class Main
 
                             BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
                             String line;
-                            while ((line = in.readLine()) != null)
-                            {
+                            while ((line = in.readLine()) != null) {
                                 System.out.println(line);
                                 JsonElement jsonElement = JsonParser.parseString(line);
                                 JsonObject jsonObject = jsonElement.getAsJsonObject();
-                                outputField.setText(jsonObject.get("Acesso:").getAsString());
+                                String serverAcesso = jsonObject.get("id").getAsString();
+
+                                acesso.setText(serverAcesso);
+
+                                if (Double.parseDouble(serverAcesso) == id) {
+                                    acesso.setBackground(Color.GREEN);
+                                } else {
+                                    acesso.setBackground(Color.RED);
+                                }
                             }
-
-
-
                             in.close();
                         }
 
@@ -110,17 +115,14 @@ public class Main
                         }
 
 
-                    }
-                    catch (MalformedURLException ex)
-                    {
-                        ex.printStackTrace();
-                    }
-                    catch (IOException ex)
-                    {
-                        ex.printStackTrace();
-                    }
-                    catch(NumberFormatException ex){
-                        outputField.setText("Erro: Entrada invalida");
+                    } catch(NumberFormatException ex){
+                        acesso.setText("Erro: Entrada invalida");
+                    } catch (ProtocolException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (MalformedURLException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
                     }
                 }
             });
