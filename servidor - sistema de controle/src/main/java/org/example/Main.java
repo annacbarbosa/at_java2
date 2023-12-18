@@ -14,7 +14,7 @@ import static spark.Spark.*;
 
 
 public class Main {
-    static int acesso=1234;
+    static int acessos=0;
     public static void main(String[] args)
     {
         port(8080);
@@ -25,14 +25,15 @@ public class Main {
         frame.setLocationRelativeTo(null);
 
         JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(3, 2));
+        panel.setLayout(new GridLayout(4, 2));
 
         JTextField Id = new JTextField();
         JTextField acesso = new JTextField();
 
         Id.setFont((new Font("Arial", Font.PLAIN, 30)));
         acesso.setFont((new Font("Arial", Font.PLAIN, 30)));
-        JLabel label1 = new JLabel("Código de Acesso:");
+
+        JLabel label1 = new JLabel("Id:");
         label1.setFont((new Font("Arial", Font.BOLD, 30)));
         JLabel label3 = new JLabel("Acesso:");
         label3.setFont((new Font("Arial", Font.BOLD, 30)));
@@ -44,59 +45,33 @@ public class Main {
 
         String [] buttonLabels = {"Limpar","Fechar"};
 
-//        get("/nome", (req, res) ->
-//        {
-//            String op1 = req.queryParams("p");
-//            Id.setText(Integer.toString(acessos));
-//
-//            String content=Integer.toString(acessos);
-//            acessos++;
-//            return content;
-//        });
+        get("/cartao", (req, res) ->
+        {
+            String op1 = req.queryParams("p");
+            Id.setText(op1);
 
-        post("/api",
-                (req, res) -> {
-                    double id, a;
+            String content=Integer.toString(acessos);
+            acessos++;
+            return content;
+        });
 
-                    String corpoRequisicao = req.body();
-                    System.out.println("Corpo JSON: " + corpoRequisicao);
+        post("/cartao", (req, res) -> {
+            double id;
 
-                    JsonElement jsonElement = JsonParser.parseString(corpoRequisicao);
-                    JsonObject jsonObject = jsonElement.getAsJsonObject();
+            String corpoRequisicao = req.body();
+            System.out.println("Corpo JSON: " + corpoRequisicao);
 
-                    Id.setText(jsonObject.get("Id").getAsString());
-                    a = Double.parseDouble(Id.getText());
+            JsonElement jsonElement = JsonParser.parseString(corpoRequisicao);
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            Id.setText(jsonObject.get("Id").getAsString());
+            acesso.setText(jsonObject.get("acesso").getAsString());
 
+            id=Double.parseDouble(acesso.getText());
 
-                    if (Id == acesso) {
-                        acesso.setText("AK-1");
-                        acesso.setForeground(Color.GREEN);
-                        Timer timer = new Timer(3000, new ActionListener() {
-                            @Override
-                            public void actionPerformed(ActionEvent e) {
-                                acesso.setText("");
-                                acesso.setForeground(Color.BLACK);
-                            }
-                        });
-                        timer.setRepeats(false);
-                        timer.start();
-                    } else if (Id != acesso) {
-                        acesso.setText("AK-0");
+            acesso.setText(String.format(String.valueOf(id)));
 
-                        acesso.setForeground(Color.RED);
-                    }
-                    Timer timer = new Timer(3000, new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            acesso.setText("");
-                            acesso.setForeground(Color.BLACK);
-                        }
-                    });
-                    timer.setRepeats(false);
-                    timer.start();
-                    return null;
-                }
-
+            return "{\"acesso\":\"" +  String.format(String.valueOf(id)) + "\"}";
+        });
 
         for(String label : buttonLabels) {
             JButton button = new JButton(label);
@@ -121,5 +96,5 @@ public class Main {
         }
         frame.add(panel);
         frame.setVisible(true);
-};
+    }
 }
